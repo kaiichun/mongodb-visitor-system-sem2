@@ -73,13 +73,13 @@ app.get("/visitors/:id", (request, response) => {
   }
 });
 
-app.get("/reservations", (require, response) => {
+app.get("/reservations", (request, response) => {
   response.json(reservations);
 });
 
-app.get("/reservations/:id", (require, response) => {
+app.get("/reservations/:id", (request, response) => {
   const reservation = reservations.find(
-    (p) => parseInt(p.id) === parseInt(require.params.id)
+    (p) => parseInt(p.id) === parseInt(request.params.id)
   );
   if (reservation) {
     response.status(200).json(reservation);
