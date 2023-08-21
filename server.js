@@ -27,20 +27,26 @@ let reservations = [
 // Your routing, authentication, and controller code goes here
 
 app.get("/parks", (request, response) => {
-  response.json(parks);
+  const { facilities } = request.query;
+  let filteredParks = [...parks];
+
+  if (facilities) {
+    filteredParks = filteredParks.filter((p) => {
+      return p.facilities.includes(facilities);
+    });
+  }
+
+  response.json(filteredParks);
 });
 
 app.get("/parks/:id", (request, response) => {
-  // authors/1
   const park = parks.find(
     (p) => parseInt(p.id) === parseInt(request.params.id)
   );
-  // make sure park is available
   if (park) {
     response.status(200).json(park);
   } else {
-    // error handling
-    response.status(404).json({ error: "PARK ID provided is not available" });
+    response.status(400).json({ error: "PARK ID provided is not available" });
   }
 });
 
@@ -49,26 +55,31 @@ app.get("/visitors", (request, response) => {
 });
 
 app.get("/visitors/:id", (request, response) => {
-  const visitorId = parseInt(request.params.id);
-  const visitor = visitors.find((v) => v.id === visitorId);
+  const visitor = visitors.find(
+    (v) => parseInt(v.id) === parseInt(request.params.id)
+  );
 
   if (visitor) {
-    const pastReservations = reservations.filter(
-      (r) => parseInt(r.id) === parseInt(visitor.pastReservations)
-    );
-    const upcomingReservations = reservations.filter(
-      (r) => parseInt(r.id) === parseInt(visitor.upcomingReservations)
-    );
-
-    const visitorInfo = {
+    response.status(200).json({
       ...visitor,
-      pastReservations: [pastReservations],
-      upcomingReservations: [upcomingReservations],
-    };
-
-    response.status(200).json(visitorInfo);
+      name: visitor.name,
+      upcomingReservations: visitor.upcomingReservations.map(
+        (reservation_id) => {
+          const reservation = reservations.find((r) => r.id === reservation_id);
+          if (reservation) {
+            return reservation;
+          }
+        }
+      ),
+      pastReservations: visitor.pastReservations.map((reservation_id) => {
+        const reservation = reservations.find((r) => r.id === reservation_id);
+        if (reservation) {
+          return reservation;
+        }
+      }),
+    });
   } else {
-    response.status(404).json({ error: "Visitor not found" });
+    response.status(400).json({ error: "Visitor ID is unavailable" });
   }
 });
 
@@ -83,7 +94,7 @@ app.get("/reservations/:id", (request, response) => {
   if (reservation) {
     response.status(200).json(reservation);
   } else {
-    response.status(404).json("Reservation ID is not available");
+    response.status(400).json("Reservation ID is not available");
   }
 });
 
