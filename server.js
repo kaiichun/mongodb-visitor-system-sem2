@@ -54,17 +54,16 @@ app.get("/visitors/:id", (request, response) => {
 
   if (visitor) {
     const pastReservations = reservations.filter(
-      (r) => r.visitorId === visitorId
+      (r) => parseInt(r.id) === parseInt(visitor.pastReservations)
     );
     const upcomingReservations = reservations.filter(
-      (r) => r.visitorId === visitorId
+      (r) => parseInt(r.id) === parseInt(visitor.upcomingReservations)
     );
 
     const visitorInfo = {
-      id: visitor.id,
-      name: visitor.name,
-      pastReservations,
-      upcomingReservations,
+      ...visitor,
+      pastReservations: [pastReservations],
+      upcomingReservations: [upcomingReservations],
     };
 
     response.status(200).json(visitorInfo);
